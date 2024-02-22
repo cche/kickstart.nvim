@@ -149,8 +149,14 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
 -- Configure how new splits should be opened
-vim.o.splitright = true
-vim.o.splitbelow = true
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+
+-- Sets how neovim will display certain whitespace in the editor.
+--  See :help 'list'
+--  and :help 'listchars'
+vim.opt.list = true
+vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
