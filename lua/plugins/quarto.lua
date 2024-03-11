@@ -11,65 +11,72 @@ return {
           { 'neovim/nvim-lspconfig' },
         },
         opts = {
-            lsp = {
-              hover = {
-                border = "rounded",
-              }
-            }
-          }
+          lsp = {
+            hover = {
+              border = 'rounded',
+            },
+          },
+        },
       },
-
     },
     opts = {
       lspFeatures = {
         languages = { 'r', 'python', 'julia', 'bash', 'lua', 'html' },
       },
     },
-    ft = "quarto",
+    ft = 'quarto',
     keys = {
-      { "<leader>qa", ":QuartoActivate<cr>", desc = "quarto activate" },
-      { "<leader>qp", ":lua require'quarto'.quartoPreview()<cr>", desc = "quarto preview" },
-      { "<leader>qq", ":lua require'quarto'.quartoClosePreview()<cr>", desc = "quarto close" },
-      { "<leader>qh", ":QuartoHelp ", desc = "quarto help" },
-      { "<leader>qe", ":lua require'otter'.export()<cr>", desc = "quarto export" },
-      { "<leader>qE", ":lua require'otter'.export(true)<cr>", desc = "quarto export overwrite" },
-      { "<leader>qrr", ":QuartoSendAbove<cr>", desc = "quarto run to cursor" },
-      { "<leader>qra", ":QuartoSendAll<cr>", desc = "quarto run all" },
-      { "<leader><cr>", ":SlimeSend<cr>", desc = "send code chunk" },
-      { "<c-cr>", ":SlimeSend<cr>", desc = "send code chunk" },
-      { "<c-cr>", "<esc>:SlimeSend<cr>i", mode = "i", desc = "send code chunk" },
-      { "<c-cr>", "<Plug>SlimeRegionSend<cr>", mode = "v", desc = "send code chunk" },
-      { "<cr>", "<Plug>SlimeRegionSend<cr>", mode = "v", desc = "send code chunk" },
-      { "<leader>ctr", ":split term://R<cr>", desc = "terminal: R" },
-      { "<leader>cti", ":split term://ipython<cr>", desc = "terminal: ipython" },
-      { "<leader>ctp", ":split term://python<cr>", desc = "terminal: python" },
-      { "<leader>ctj", ":split term://julia<cr>", desc = "terminal: julia" },
+      { '<leader>qa', ':QuartoActivate<cr>', desc = 'quarto activate' },
+      { '<leader>qp', ":lua require'quarto'.quartoPreview()<cr>", desc = 'quarto preview' },
+      { '<leader>qq', ":lua require'quarto'.quartoClosePreview()<cr>", desc = 'quarto close' },
+      { '<leader>qh', ':QuartoHelp ', desc = 'quarto help' },
+      { '<leader>qe', ":lua require'otter'.export()<cr>", desc = 'quarto export' },
+      { '<leader>qE', ":lua require'otter'.export(true)<cr>", desc = 'quarto export overwrite' },
+      { '<leader>qrr', ':QuartoSendAbove<cr>', desc = 'quarto run to cursor' },
+      { '<leader>qra', ':QuartoSendAll<cr>', desc = 'quarto run all' },
+      { '<leader><cr>', ':SlimeSend<cr>', desc = 'send code chunk' },
+      { '<c-cr>', ':SlimeSend<cr>', desc = 'send code chunk' },
+      { '<c-cr>', '<esc>:SlimeSend<cr>i', mode = 'i', desc = 'send code chunk' },
+      { '<c-cr>', '<Plug>SlimeRegionSend<cr>', mode = 'v', desc = 'send code chunk' },
+      { '<cr>', '<Plug>SlimeRegionSend<cr>', mode = 'v', desc = 'send code chunk' },
+      { '<leader>cp', '<esc>i```{python}<cr>```<esc>O', desc = 'New python chunk' },
+      { '<leader>cr', '<esc>i```{r}<cr>```<esc>O', desc = 'New R chunk' },
+      { '<leader>ctr', ':split term://R<cr>', desc = 'terminal: R' },
+      { '<leader>ctp', ':split term://ipython<cr>', desc = 'terminal: ipython' },
+      { '<leader>ctj', ':split term://julia<cr>', desc = 'terminal: julia' },
     },
   },
-
-
 
   -- send code from python/r/qmd documets to a terminal or REPL
   -- like ipython, R, bash
   {
     'jpalardy/vim-slime',
     init = function()
-      vim.b['quarto_is_' .. 'python' .. '_chunk'] = false
-      Quarto_is_in_python_chunk = function()
-        require 'otter.tools.functions'.is_otter_language_context('python')
-      end
+      -- slime, neovvim terminal
+      vim.g.slime_target = 'neovim'
+      vim.g.slime_python_ipython = 1
+      vim.g.slime_dispatch_ipython_pause = 100
+      -- vim.g.slime_cell_delimiter = '#\\s\\=%%'
+      vim.b.slime_cell_delimiter = '```'
 
       vim.cmd [[
-      let g:slime_dispatch_ipython_pause = 100
-      function SlimeOverride_EscapeText_quarto(text)
-      call v:lua.Quarto_is_in_python_chunk()
-      if exists('g:slime_python_ipython') && len(split(a:text,"\n")) > 1 && b:quarto_is_python_chunk
-      return ["%cpaste -q\n", g:slime_dispatch_ipython_pause, a:text, "--", "\n"]
+      function! _EscapeText_python(text)
+      if slime#config#resolve("python_ipython") && len(split(a:text,"\n")) > 1
+      return ["%cpaste -q\n", slime#config#resolve("dispatch_ipython_pause"), a:text, "--\n"]
       else
-      return a:text
+      let empty_lines_pat = '\(^\|\n\)\zs\(\s*\n\+\)\+'
+      let no_empty_lines = substitute(a:text, empty_lines_pat, "", "g")
+      let dedent_pat = '\(^\|\n\)\zs'.matchstr(no_empty_lines, '^\s*')
+      let dedented_lines = substitute(no_empty_lines, dedent_pat, "", "g")
+      let except_pat = '\(elif\|else\|except\|finally\)\@!'
+      let add_eol_pat = '\n\s[^\n]\+\n\zs\ze\('.except_pat.'\S\|$\)'
+      return substitute(dedented_lines, add_eol_pat, "\n", "g")
       end
       endfunction
       ]]
+    end,
+    config = function()
+      vim.keymap.set({ 'n', 'i', 'v' }, '<c-cr>', ':SlimeSend<cr>', { desc = 'send code chunk' })
 
       local function mark_terminal()
         vim.g.slime_last_channel = vim.b.terminal_job_id
@@ -80,56 +87,11 @@ return {
         vim.b.slime_config = { jobid = vim.g.slime_last_channel }
       end
 
-      vim.b.slime_cell_delimiter = "```"
-
-      -- slime, neovvim terminal
-      vim.g.slime_target = "neovim"
-      vim.g.slime_python_ipython = 1
-
-      -- -- slime, tmux
-      -- vim.g.slime_target = 'tmux'
-      -- vim.g.slime_bracketed_paste = 1
-      -- vim.g.slime_default_config = { socket_name = "default", target_pane = ".2" }
-
-      local function toggle_slime_tmux_nvim()
-        if vim.g.slime_target == 'tmux' then
-          pcall(function()
-            vim.b.slime_config = nil
-            vim.g.slime_default_config = nil
-          end
-          )
-          -- slime, neovvim terminal
-          vim.g.slime_target = "neovim"
-          vim.g.slime_bracketed_paste = 0
-          vim.g.slime_python_ipython = 1
-        elseif vim.g.slime_target == 'neovim' then
-          pcall(function()
-            vim.b.slime_config = nil
-            vim.g.slime_default_config = nil
-          end
-          )
-          -- -- slime, tmux
-          vim.g.slime_target = 'tmux'
-          vim.g.slime_bracketed_paste = 1
-          vim.g.slime_default_config = { socket_name = "default", target_pane = ".2" }
-        end
-      end
-
-      require 'which-key'.register({
+      require('which-key').register {
         ['<leader>cm'] = { mark_terminal, 'mark terminal' },
         ['<leader>cs'] = { set_terminal, 'set terminal' },
-        ['<leader>ct'] = { toggle_slime_tmux_nvim, 'toggle tmux/nvim terminal' },
-        c = {
-          name = 'code',
-          c = { ':SlimeConfig<cr>', 'slime config' },
-          n = { ':split term://$SHELL<cr>', 'new terminal' },
-          r = { ':split term://R<cr>', 'new R terminal' },
-          p = { ':split term://python<cr>', 'new python terminal' },
-          i = { ':split term://ipython<cr>', 'new ipython terminal' },
-          j = { ':split term://julia<cr>', 'new julia terminal' },
-        },
-      })
-    end
+      }
+    end,
   },
 
   -- paste an image to markdown from the clipboard
@@ -137,12 +99,11 @@ return {
   { 'ekickx/clipboard-image.nvim' },
 
   -- preview equations
-  {'jbyuki/nabla.nvim',
+  {
+    'jbyuki/nabla.nvim',
     keys = {
       { '<leader>ee', ':lua require"nabla".toggle_virt()<cr>', 'toggle equations' },
       { '<leader>eh', ':lua require"nabla".popup()<cr>', 'hover equation' },
     },
   },
-
-
 }

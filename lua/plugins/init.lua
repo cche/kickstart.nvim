@@ -3,6 +3,7 @@
 --
 -- See the kickstart.nvim README for more information
 return {
+  { 'tpope/vim-fugitive' },
   {
     'chrishrb/gx.nvim',
     event = { 'BufEnter' },
@@ -33,4 +34,7 @@ return {
   --     }
   --   end
   -- },
+  require('lspconfig').sourcery.setup {
+    cmd = { '/home/linuxbrew/.linuxbrew/bin/sourcery', 'lsp' },
+  },
 }
