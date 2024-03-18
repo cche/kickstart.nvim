@@ -4,29 +4,18 @@
 -- See the kickstart.nvim README for more information
 return {
   {
-    'NeogitOrg/neogit',
-    dependencies = {
-      'nvim-lua/plenary.nvim', -- required
-      'nvim-telescope/telescope.nvim', -- optional
-    },
-    opts = {
-      kind = 'split',
-    },
-    config = true,
-  },
-  {
     'chrishrb/gx.nvim',
     event = { 'BufEnter' },
     dependencies = { 'nvim-lua/plenary.nvim' },
     config = true, -- default settings
   },
-  -- Test documentation generation plugin at some point
+  -- TODO Test documentation generation plugin at some point
   -- {
   --   "danymat/neogen",
   --   dependencies = "nvim-treesitter/nvim-treesitter",
   --   config = true
   -- },
-  -- terminal
+  -- NOTE  terminal
   -- {
   --   "akinsho/toggleterm.nvim",
   --   version = '*',
