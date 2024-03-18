@@ -942,5 +942,16 @@ require('lazy').setup({
   },
 })
 
+require('lspconfig').sourcery.setup {
+  cmd = { '/home/linuxbrew/.linuxbrew/bin/sourcery', 'lsp' },
+}
+-- Set snakemake filetype
+local snakemake = vim.api.nvim_create_augroup('snakemake', { clear = true })
+vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
+  pattern = 'Snakefile,*.smk',
+  command = 'set filetype=snakemake',
+  group = snakemake,
+})
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

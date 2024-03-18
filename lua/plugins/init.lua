@@ -10,13 +10,6 @@ return {
     dependencies = { 'nvim-lua/plenary.nvim' },
     config = true, -- default settings
   },
-  -- {
-  --   "kylechui/nvim-surround",
-  --   event = "VeryLazy",
-  --   config = function()
-  --     require("nvim-surround").setup()
-  --   end
-  -- },
   -- Test documentation generation plugin at some point
   -- {
   --   "danymat/neogen",
@@ -34,7 +27,4 @@ return {
   --     }
   --   end
   -- },
-  require('lspconfig').sourcery.setup {
-    cmd = { '/home/linuxbrew/.linuxbrew/bin/sourcery', 'lsp' },
-  },
 }
