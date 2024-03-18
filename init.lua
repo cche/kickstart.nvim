@@ -942,5 +942,18 @@ require('lazy').setup({
   },
 })
 
+-- Configure sourcery binary
+require('lspconfig').sourcery.setup {
+  cmd = { '/home/linuxbrew/.linuxbrew/bin/sourcery', 'lsp' },
+}
+
+-- vim.api.nvim_create_autocmd({ 'BufWritePost' }, {
+--   callback = function()
+--     if vim.api.nvim_buf_get_name(0) ~= nil and vim.api.nvim_buf_get_name(0):match '.+\\.smk$' then
+--       vim.cmd 'make!' -- Trigger linting using makeprg
+--     end
+--   end,
+-- })
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

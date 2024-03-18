@@ -34,7 +34,4 @@ return {
   --     }
   --   end
   -- },
-  require('lspconfig').sourcery.setup {
-    cmd = { '/home/linuxbrew/.linuxbrew/bin/sourcery', 'lsp' },
-  },
 }
