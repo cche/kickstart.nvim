@@ -36,6 +36,8 @@ return {
       },
       g = {
         name = 'Git',
+        g = { '<cmd>Neogit<cr>', 'neogit' },
+        c = { '<cmd>Neogit commit<cr>', 'commit' },
       },
       f = {
         name = 'Find/search',
