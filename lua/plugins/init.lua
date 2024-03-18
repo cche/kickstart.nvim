@@ -3,7 +3,14 @@
 --
 -- See the kickstart.nvim README for more information
 return {
-  { 'tpope/vim-fugitive' },
+  {
+    'NeogitOrg/neogit',
+    dependencies = {
+      'nvim-lua/plenary.nvim', -- required
+      'nvim-telescope/telescope.nvim', -- optional
+    },
+    config = true,
+  },
   {
     'chrishrb/gx.nvim',
     event = { 'BufEnter' },
