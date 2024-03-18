@@ -1,6 +1,6 @@
 return {
   'nvim-neo-tree/neo-tree.nvim',
-  version = '*',
+  branch = 'v3.x',
   dependencies = {
     'nvim-lua/plenary.nvim',
     'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
@@ -16,7 +16,7 @@ return {
             require('neo-tree.command').execute { action = 'close' }
           end,
         },
-      },
+      }
     }
   end,
   keys = {
