@@ -102,8 +102,8 @@ return {
   {
     'jbyuki/nabla.nvim',
     keys = {
-      { '<leader>ee', ':lua require"nabla".toggle_virt()<cr>', 'toggle equations' },
-      { '<leader>eh', ':lua require"nabla".popup()<cr>', 'hover equation' },
+      { '<leader>qt', ':lua require"nabla".toggle_virt()<cr>', 'toggle equations' },
+      { '<leader>qh', ':lua require"nabla".popup()<cr>', 'hover equation' },
     },
   },
 }
