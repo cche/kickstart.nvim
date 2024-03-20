@@ -54,6 +54,16 @@ return {
       },
       o = {
         name = 'Obsidian',
+        n = { '<cmd>ObsidianNew<cr>', 'new note' },
+        o = { '<cmd>ObsidianQuickSwitch<cr>', 'quick switch' },
+        s = { '<cmd>ObsidianSearch<cr>', 'search' },
+        f = { '<cmd>ObsidianFollowLink<cr>', 'follow link' },
+        l = { '<cmd>ObsidianLink<cr>', 'create link to note' },
+        L = { '<cmd>ObsidianLinkNew<cr>', 'create new link' },
+        t = { '<cmd>ObsidianTemplate<cr>', 'insert template' },
+        b = { '<cmd>ObsidianBacklinks<cr>', 'backlinks' },
+        e = { '<cmd>ObsidianExtractNote<cr>', 'extract note' },
+        a = { '<cmd>ObsidianTags<cr>', 'tags' },
       },
       c = {
         name = 'code',
