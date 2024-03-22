@@ -51,13 +51,15 @@ return {
   -- like ipython, R, bash
   {
     'jpalardy/vim-slime',
+    event = 'VeryLazy',
+    ft = { 'python', 'r', 'qmd', 'rmd' },
     init = function()
       -- slime, neovvim terminal
       vim.g.slime_target = 'neovim'
       vim.g.slime_python_ipython = 1
       vim.g.slime_dispatch_ipython_pause = 100
       -- vim.g.slime_cell_delimiter = '#\\s\\=%%'
-      vim.b.slime_cell_delimiter = '```'
+      vim.g.slime_cell_delimiter = '```'
 
       vim.cmd [[
       function! _EscapeText_python(text)
@@ -77,6 +79,7 @@ return {
     end,
     config = function()
       vim.keymap.set({ 'n', 'i', 'v' }, '<c-cr>', ':SlimeSend<cr>', { desc = 'send code chunk' })
+      vim.keymap.set({ 'n', 'i', 'v' }, '<s-cr>', '<Plug>SlimeSendCell', { desc = 'send code cell' })
 
       local function mark_terminal()
         vim.g.slime_last_channel = vim.b.terminal_job_id
@@ -101,6 +104,8 @@ return {
   -- preview equations
   {
     'jbyuki/nabla.nvim',
+    event = 'VeryLazy',
+    ft = { 'qmd', 'markdown' },
     keys = {
       { '<leader>qt', ':lua require"nabla".toggle_virt()<cr>', 'toggle equations' },
       { '<leader>qh', ':lua require"nabla".popup()<cr>', 'hover equation' },

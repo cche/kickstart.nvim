@@ -1,6 +1,8 @@
 return {
   'epwalsh/obsidian.nvim',
-  event = 'VeryLazy',
+  version = '*',
+  lazy = true,
+  ft = 'markdown',
   -- event = { 'BufReadPre ' .. vim.fn.expand '~' .. '/Documents/notes/**.md' },
   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand':
   -- event = { "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/**.md" },
@@ -28,9 +30,7 @@ return {
         name = 'work',
         path = '~/Documents/notes',
         -- Optional, override certain settings.
-        overrides = {
-          notes_subdir = 'notes',
-        },
+        overrides = {},
       },
     },
     -- Optional, if you keep notes in a specific subdirectory of your vault.

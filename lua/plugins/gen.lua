@@ -1,7 +1,7 @@
 return {
   'David-Kunz/gen.nvim',
   config = function()
-    vim.keymap.set({ 'v', 'n' }, '<leader>co', ':Gen<CR>')
+    -- vim.keymap.set({ 'v', 'n' }, '<leader>co', ':Gen<CR>')
     require('gen').model = 'codellama'
     require('gen').display_mode = 'split'
     require('gen').prompts['Fix_Code'] = {
@@ -15,4 +15,5 @@ return {
       extract = '```$filetype\n(.-)```',
     }
   end,
+  key = { '<leader>co', '<cmd>Gen<CR>', desc = 'Call ollama' },
 }
