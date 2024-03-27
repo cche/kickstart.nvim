@@ -374,6 +374,15 @@ require('lazy').setup({
             require('telescope.themes').get_dropdown(),
           },
         },
+
+        -- See `:help telescope.builtin`
+        defaults = {
+          layout_strategy = 'horizontal',
+          layout_config = {
+            prompt_position = 'top',
+          },
+          sorting_strategy = 'ascending',
+        },
       }
 
       -- Enable telescope extensions, if they are installed
