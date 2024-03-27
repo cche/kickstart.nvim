@@ -1,19 +1,24 @@
 return {
   'David-Kunz/gen.nvim',
   config = function()
-    -- vim.keymap.set({ 'v', 'n' }, '<leader>co', ':Gen<CR>')
-    require('gen').model = 'codellama'
-    require('gen').display_mode = 'split'
-    require('gen').prompts['Fix_Code'] = {
+    local gen = require 'gen'
+    gen.model = 'mistral'
+    gen.command = function(options)
+      local body = { model = gen.model, stream = true }
+      return 'curl --silent --no-buffer -X POST http://' .. options.host .. ':' .. options.port .. '/api/chat -d $body'
+    end
+    gen.display_mode = 'split'
+    gen.prompts['Fix_Code'] = {
       prompt = 'Fix the following code. Only ouput the result in format ```$filetype\n...\n```:\n```$filetype\n$text\n```',
       replace = true,
       extract = '```$filetype\n(.-)```',
     }
-    require('gen').prompts['Comment_Code'] = {
-      prompt = 'Add comments to the following code so that it is clear what it does. Only ouput the result in format ```$filetype\n...\n```:\n```$filetype\n$text\n```',
-      replace = true,
+    gen.prompts['Explain_Code'] = {
+      prompt = 'Explain what the following code does:\n```$filetype\n$text\n```',
+      replace = false,
       extract = '```$filetype\n(.-)```',
     }
+    gen.debug = false
   end,
-  key = { '<leader>co', '<cmd>Gen<CR>', desc = 'Call ollama' },
+  vim.keymap.set({ 'v', 'n' }, '<leader>co', ':Gen<cr>', { desc = 'Generate' }),
 }
