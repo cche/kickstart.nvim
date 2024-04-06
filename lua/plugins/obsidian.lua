@@ -24,7 +24,7 @@ return {
     workspaces = {
       {
         name = 'chronoget',
-        path = '~/src/gogs/Chronoget/data/docs',
+        path = '~/src/repos/chronoget/data/docs',
       },
       {
         name = 'work',
