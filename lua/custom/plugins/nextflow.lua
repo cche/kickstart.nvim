@@ -1,3 +1,0 @@
-return {
-  'Mxrcon/nextflow-vim',
-}
