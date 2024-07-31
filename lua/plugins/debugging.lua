@@ -58,6 +58,7 @@ return {
       },
       {
         'mfussenegger/nvim-dap-python',
+        event = 'VeryLazy',
         config = function()
           require('dap-python').setup()
           require('dap.ext.vscode').load_launchjs 'launch.json'
