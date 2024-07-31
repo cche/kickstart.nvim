@@ -90,9 +90,9 @@ return {
         vim.b.slime_config = { jobid = vim.g.slime_last_channel }
       end
 
-      require('which-key').register {
-        ['<leader>cm'] = { mark_terminal, 'mark terminal' },
-        ['<leader>cs'] = { set_terminal, 'set terminal' },
+      require('which-key').add {
+        { '<leader>cm', mark_terminal, desc = 'mark terminal' },
+        { '<leader>cs', set_terminal, desc = 'set terminal' },
       }
     end,
   },
