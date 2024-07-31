@@ -110,6 +110,8 @@ vim.opt.mouse = 'a'
 -- Don't show the mode, since it's already in status line
 vim.opt.showmode = false
 
+vim.opt.foldenable = false
+
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
@@ -685,12 +687,26 @@ require('lazy').setup({
 
   { -- Autoformat
     'stevearc/conform.nvim',
+    lazy = false,
+    keys = {
+      {
+        '<leader>lf',
+        function()
+          require('conform').format { async = true, lsp_fallback = true }
+        end,
+        mode = '',
+        desc = '[F]ormat buffer',
+      },
+    },
     opts = {
       notify_on_error = false,
-      format_on_save = {
-        timeout_ms = 500,
-        lsp_fallback = true,
-      },
+      format_on_save = function(bufnr)
+        local disable_filetypes = { c = true, cpp = true, tex = true, markdown = true, mail = true }
+        return {
+          timeout_ms = 500,
+          lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
+        }
+      end,
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
@@ -804,7 +820,7 @@ require('lazy').setup({
           end, { 'i', 's' }),
         },
         sources = cmp.config.sources {
-          { name = 'codeium' },
+          -- { name = 'codeium' },
           { name = 'nvim_lsp' },
           { name = 'otter' },
           { name = 'luasnip', keyword_length = 3, max_item_count = 3 },
@@ -877,15 +893,18 @@ require('lazy').setup({
       --  and try some other statusline plugin
       local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      statusline.setup {
+        -- use_icons = vim.g.have_nerd_font,
+        version = '*',
+      }
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
       -- cursor location to LINE:COLUMN
-      ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
-      end
+      -- @diagnostic disable-next-line: duplicate-set-field
+      -- statusline.section_location = function()
+      --   return '%2l:%-2v'
+      -- end
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
