@@ -5,7 +5,7 @@ return {
   config = function()
     require('lint').linters.snakelint = {
       name = 'snakelint',
-      cmd = 'snakemake',
+      cmd = '/home/linuxbrew/.linuxbrew/bin/snakemake',
       stdin = false, -- false if it doesn't support content input via stdin. If so filename is automatically added to the arguments.
       append_fname = true, -- Automatically append the file name to `args` if `stdin = false` (default: true)
       args = { '--lint', 'text', '--snakefile' }, -- list of arguments. Can contain functions with zero arguments that will be evaluated once the linter is used.
