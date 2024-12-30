@@ -6,7 +6,7 @@ return {
   },
   config = function()
     require('todotxt-nvim').setup {
-      todo_file = '~/Dropbox/Apps/Simpletask/todo.txt',
+      todo_file = '~/src/repos/todo.nvim/todo.txt',
       sidebar = {
         width = 50,
         position = 'right',
