@@ -224,7 +224,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
-if not vim.uv.fs_stat(lazypath) then
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
   local out = vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
   if vim.v.shell_error ~= 0 then
@@ -293,23 +293,58 @@ require('lazy').setup({
   --  config = function() ... end
 
   -- { -- Useful plugin to show you pending keybinds.
-  -- MOVED THIS TO SEPARATE FILE
+  -- -- MOVED THIS TO SEPARATE FILE
   --   'folke/which-key.nvim',
   --   event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-  --   config = function() -- This is the function that runs, AFTER loading
-  --     require('which-key').setup()
+  --   opts = {
+  --     icons = {
+  --       -- set icon mappings to true if you have a Nerd Font
+  --       mappings = vim.g.have_nerd_font,
+  --       -- If you are using a Nerd Font: set icons.keys to an empty table which will use the
+  --       -- default whick-key.nvim defined Nerd Font icons, otherwise define a string table
+  --       keys = vim.g.have_nerd_font and {} or {
+  --         Up = '<Up> ',
+  --         Down = '<Down> ',
+  --         Left = '<Left> ',
+  --         Right = '<Right> ',
+  --         C = '<C-…> ',
+  --         M = '<M-…> ',
+  --         D = '<D-…> ',
+  --         S = '<S-…> ',
+  --         CR = '<CR> ',
+  --         Esc = '<Esc> ',
+  --         ScrollWheelDown = '<ScrollWheelDown> ',
+  --         ScrollWheelUp = '<ScrollWheelUp> ',
+  --         NL = '<NL> ',
+  --         BS = '<BS> ',
+  --         Space = '<Space> ',
+  --         Tab = '<Tab> ',
+  --         F1 = '<F1>',
+  --         F2 = '<F2>',
+  --         F3 = '<F3>',
+  --         F4 = '<F4>',
+  --         F5 = '<F5>',
+  --         F6 = '<F6>',
+  --         F7 = '<F7>',
+  --         F8 = '<F8>',
+  --         F9 = '<F9>',
+  --         F10 = '<F10>',
+  --         F11 = '<F11>',
+  --         F12 = '<F12>',
+  --       },
+  --     },
   --
   --     -- Document existing key chains
-  --     require('which-key').add {
-  --       { '<leader>c', group = '[C]ode' },
+  --     spec = {
+  --       { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
   --       { '<leader>d', group = '[D]ocument' },
   --       { '<leader>r', group = '[R]ename' },
   --       { '<leader>s', group = '[S]earch' },
   --       { '<leader>w', group = '[W]orkspace' },
   --       { '<leader>t', group = '[T]oggle' },
   --       { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
-  --     }
-  --   end,
+  --     },
+  --   },
   -- },
 
   -- NOTE: Plugins can specify dependencies.
@@ -502,8 +537,9 @@ require('lazy').setup({
           --
           -- In this case, we create a function that lets us more easily define mappings specific
           -- for LSP related items. It sets the mode, buffer and description for us each time.
-          local map = function(keys, func, desc)
-            vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
+          local map = function(keys, func, desc, mode)
+            mode = mode or 'n'
+            vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
           end
 
           -- Jump to the definition of the word under your cursor.
@@ -625,15 +661,23 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        pyright = {},
+        pyright = {
+          opts = {
+            -- all the opts nillable
+            root_dir = function(fname)
+              return require('lspconfig.util').root_pattern('.git', 'setup.py', 'setup.cfg', 'pyproject.toml', 'requirements.txt')(fname)
+                or require('lspconfig.util').path.dirname(fname)
+            end,
+          },
+        },
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
         --
-        -- But for many setups, the LSP (`tsserver`) will work just fine
-        -- tsserver = {},
+        -- But for many setups, the LSP (`ts_ls`) will work just fine
+        -- ts_ls = {},
         --
 
         ruff_lsp = {},
@@ -705,7 +749,7 @@ require('lazy').setup({
             local server = servers[server_name] or {}
             -- This handles overriding only values explicitly passed
             -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for tsserver)
+            -- certain features of an LSP (for example, turning off formatting for ts_ls)
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
             require('lspconfig')[server_name].setup(server)
           end,
@@ -721,7 +765,7 @@ require('lazy').setup({
       {
         '<leader>lf',
         function()
-          require('conform').format { async = true, lsp_fallback = true }
+          require('conform').format { async = true, lsp_format = 'fallback' }
         end,
         mode = '',
         desc = '[F]ormat buffer',
@@ -730,10 +774,19 @@ require('lazy').setup({
     opts = {
       notify_on_error = false,
       format_on_save = function(bufnr)
-        local disable_filetypes = { c = true, cpp = true, tex = true, markdown = true, mail = true }
+        -- Disable "format_on_save lsp_fallback" for languages that don't
+        -- have a well standardized coding style. You can add additional
+        -- languages here or re-enable it for the disabled ones.
+        local disable_filetypes = { c = true, cpp = true }
+        local lsp_format_opt
+        if disable_filetypes[vim.bo[bufnr].filetype] then
+          lsp_format_opt = 'never'
+        else
+          lsp_format_opt = 'fallback'
+        end
         return {
           timeout_ms = 500,
-          lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
+          lsp_format = lsp_format_opt,
         }
       end,
       formatters_by_ft = {
@@ -954,7 +1007,9 @@ require('lazy').setup({
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
-    -- build = ':TSUpdate',
+    build = ':TSUpdate',
+    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
       ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'markdown', 'markdown_inline', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
       -- Autoinstall languages that are not installed
@@ -968,19 +1023,12 @@ require('lazy').setup({
       },
       indent = { enable = true, disable = { 'ruby' } },
     },
-    config = function(_, opts)
-      -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-
-      ---@diagnostic disable-next-line: missing-fields
-      require('nvim-treesitter.configs').setup(opts)
-
-      -- There are additional nvim-treesitter modules that you can use to interact
-      -- with nvim-treesitter. You should go explore a few and see what interests you:
-      --
-      --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
-      --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
-      --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-    end,
+    -- There are additional nvim-treesitter modules that you can use to interact
+    -- with nvim-treesitter. You should go explore a few and see what interests you:
+    --
+    --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
+    --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
+    --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
