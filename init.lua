@@ -112,6 +112,12 @@ vim.opt.showmode = false
 
 vim.opt.foldenable = false
 
+-- Set tab to 4 spaces
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
+
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
@@ -485,12 +491,11 @@ require('lazy').setup({
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
-    lazy = true,
     dependencies = {
       -- Automatically install LSPs and related tools to stdpath for Neovim
       { 'williamboman/mason.nvim', config = true }, -- NOTE: Must be loaded before dependants
       'williamboman/mason-lspconfig.nvim',
-      -- 'WhoIsSethDaniel/mason-tool-installer.nvim',
+      'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -639,24 +644,24 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
 
-      local _border = 'rounded'
-
-      local lsp_flags = {
-        allow_incremental_sync = true,
-        debounce_text_changes = 150,
-      }
-
-      vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
-        border = _border,
-      })
-
-      vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-        border = _border,
-      })
-
-      vim.diagnostic.config {
-        float = { border = _border },
-      }
+      -- local _border = 'rounded'
+      --
+      -- local lsp_flags = {
+      --   allow_incremental_sync = true,
+      --   debounce_text_changes = 150,
+      -- }
+      --
+      -- vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
+      --   border = _border,
+      -- })
+      --
+      -- vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, {
+      --   border = _border,
+      -- })
+      --
+      -- vim.diagnostic.config {
+      --   float = { border = _border },
+      -- }
 
       local servers = {
         -- clangd = {},
@@ -666,7 +671,7 @@ require('lazy').setup({
             -- all the opts nillable
             root_dir = function(fname)
               return require('lspconfig.util').root_pattern('.git', 'setup.py', 'setup.cfg', 'pyproject.toml', 'requirements.txt')(fname)
-                or require('lspconfig.util').path.dirname(fname)
+                or vim.fs.dirname(fname)
             end,
           },
         },
@@ -680,13 +685,13 @@ require('lazy').setup({
         -- ts_ls = {},
         --
 
-        ruff_lsp = {},
+        ruff = {},
 
         r_language_server = {
           opts = {
             -- on_attach = on_attach,
             capabilities = capabilities,
-            flags = lsp_flags,
+            -- flags = lsp_flags,
             cmd = { '/usr/bin/R', '--slave', '-e', 'languageserver::run()' },
           },
         },
@@ -716,13 +721,13 @@ require('lazy').setup({
         yamlls = {
           -- on_attach = on_attach,
           capabilities = capabilities,
-          flags = lsp_flags,
+          -- flags = lsp_flags,
         },
 
         bashls = {
           -- on_attach = on_attach,
           capabilities = capabilities,
-          flags = lsp_flags,
+          -- flags = lsp_flags,
           filetypes = { 'sh', 'bash' },
         },
       }
@@ -741,8 +746,9 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
       })
-      -- require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
+      ---@diagnostic disable-next-line: missing-fields
       require('mason-lspconfig').setup {
         handlers = {
           function(server_name)
@@ -761,6 +767,8 @@ require('lazy').setup({
   { -- Autoformat
     'stevearc/conform.nvim',
     lazy = false,
+    event = { 'BufWritePre' },
+    cmd = { 'ConformInfo' },
     keys = {
       {
         '<leader>lf',
@@ -846,7 +854,8 @@ require('lazy').setup({
       -- See `:help cmp`
       local cmp = require 'cmp'
       local luasnip = require 'luasnip'
-      require('luasnip.loaders.from_vscode').lazy_load()
+      -- require('luasnip.loaders.from_vscode').lazy_load()
+      -- TODO: Test without above line
       luasnip.config.setup {}
 
       cmp.setup {
@@ -855,9 +864,7 @@ require('lazy').setup({
             luasnip.lsp_expand(args.body)
           end,
         },
-        completion = {
-          completeopt = 'menu,menuone,noinsert',
-        },
+        completion = { completeopt = 'menu,menuone,noinsert' },
         mapping = cmp.mapping.preset.insert {
           -- Select the [n]ext item
           ['<C-n>'] = cmp.mapping.select_next_item(),
@@ -911,6 +918,7 @@ require('lazy').setup({
         },
         sources = {
           -- { name = 'codeium' },
+          { name = 'todo-txt' },
           {
             name = 'lazydev',
             -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
@@ -989,7 +997,7 @@ require('lazy').setup({
       local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
       statusline.setup {
-        -- use_icons = vim.g.have_nerd_font,
+        use_icons = vim.g.have_nerd_font,
         version = '*',
       }
 
@@ -1053,6 +1061,7 @@ require('lazy').setup({
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   --    For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
   { import = 'plugins' },
+  ---@diagnostic disable-next-line: missing-fields
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
