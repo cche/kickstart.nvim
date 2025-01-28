@@ -2,7 +2,7 @@ return {
 
   {
     'quarto-dev/quarto-nvim',
-    ft = 'quarto',
+    ft = { 'quarto', 'qmd', 'rmd' },
     dev = false,
     opts = {},
     dependencies = {
@@ -57,7 +57,7 @@ return {
     'jpalardy/vim-slime',
     dev = false,
     event = 'VeryLazy',
-    ft = { 'python', 'r', 'qmd', 'rmd' },
+    ft = { 'quarto', 'python', 'r', 'qmd', 'rmd' },
     init = function()
       vim.b['quarto_is_python_chunk'] = false
       Quarto_is_in_python_chunk = function()
@@ -85,7 +85,6 @@ return {
       vim.g.slime_python_ipython = 1
     end,
     config = function()
-      vim.keymap.set({ 'n', 'i', 'v' }, '<c-cr>', ':SlimeSend<cr>', { desc = 'send code chunk' })
       vim.keymap.set({ 'n', 'i', 'v' }, '<s-cr>', '<Plug>SlimeSendCell', { desc = 'send code cell' })
       vim.g.slime_input_pid = false
       vim.g.slime_suggest_default = true
