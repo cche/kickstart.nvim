@@ -5,30 +5,56 @@ return {
     lazy = false,
     version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
     opts = {
+      ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
       provider = 'ollama',
       vendors = {
+        ---@type AvanteProvider
+        ---@diagnostic disable-next-line: missing-fields
         ollama = {
-          __inherited_from = 'openai',
           api_key_name = '',
-          endpoint = 'http://127.0.0.1:11434/v1',
-          -- model = 'qwen2.5-coder',
-          model = 'deepseek-r1',
+          ask = '',
+          endpoint = 'http://127.0.0.1:11434/api',
+          model = 'qwen2.5-coder',
+          -- model = 'qwen2.5',
+          -- model = 'deepseek-r1',
           -- model = 'deepseek-coder-v2',
           -- model = 'deepseek-r1:14b',
+          parse_curl_args = function(opts, code_opts)
+            return {
+              url = opts.endpoint .. '/chat',
+              headers = {
+                ['Accept'] = 'application/json',
+                ['Content-Type'] = 'application/json',
+              },
+              body = {
+                model = opts.model,
+                options = {
+                  num_ctx = 16384,
+                },
+                messages = require('avante.providers').copilot.parse_messages(code_opts), -- you can make your own message, but this is very advanced
+                stream = true,
+              },
+            }
+          end,
+          parse_stream_data = function(data, handler_opts)
+            -- Parse the JSON data
+            local json_data = vim.fn.json_decode(data)
+            -- Check for stream completion marker first
+            if json_data and json_data.done then
+              handler_opts.on_complete(nil) -- Properly terminate the stream
+              return
+            end
+            -- Process normal message content
+            if json_data and json_data.message and json_data.message.content then
+              -- Extract the content from the message
+              local content = json_data.message.content
+              -- Call the handler with the content
+              handler_opts.on_chunk(content)
+            end
+          end,
         },
       },
-      ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
-      -- provider = 'claude', -- Recommend using Claude
-      -- -- WARNING: Since auto-suggestions are a high-frequency operation and therefore expensive,
-      -- -- currently designating it as `copilot` provider is dangerous because: https://github.com/yetone/avante.nvim/issues/1048
-      -- -- Of course, you can reduce the request frequency by increasing `suggestion.debounce`.
-      -- auto_suggestions_provider = 'claude',
-      -- claude = {
-      --   endpoint = 'https://api.anthropic.com',
-      --   model = 'claude-3-5-sonnet-20241022',
-      --   temperature = 0,
-      --   max_tokens = 4096,
-      -- },
+
       ---Specify the special dual_boost mode
       ---1. enabled: Whether to enable dual_boost mode. Default to false.
       ---2. first_provider: The first provider to generate response. Default to "openai".
@@ -40,8 +66,8 @@ return {
       ---Note: This is an experimental feature and may not work as expected.
       dual_boost = {
         enabled = false,
-        first_provider = 'openai',
-        second_provider = 'claude',
+        first_provider = 'ollama',
+        second_provider = 'gemini',
         prompt = 'Based on the two reference outputs below, generate a response that incorporates elements from both but reflects your own judgment and unique perspective. Do not provide any explanation, just give the response directly. Reference Output 1: [{{provider1_output}}], Reference Output 2: [{{provider2_output}}]',
         timeout = 60000, -- Timeout in milliseconds
       },
