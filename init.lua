@@ -277,8 +277,10 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
       on_attach = function(bufnr)
-        vim.keymap.set('n', '<leader>gk', require('gitsigns').prev_hunk, { buffer = bufnr, desc = 'Go to Previous Hunk' })
-        vim.keymap.set('n', '<leader>gj', require('gitsigns').next_hunk, { buffer = bufnr, desc = 'Go to Next Hunk' })
+        -- vim.keymap.set('n', '<leader>gk', require('gitsigns').prev_hunk(), { buffer = bufnr, desc = 'Go to Previous Hunk' })
+        -- vim.keymap.set('n', '<leader>gj', require('gitsigns').next_hunk(), { buffer = bufnr, desc = 'Go to Next Hunk' })
+        vim.keymap.set('n', '<leader>gk', require('gitsigns').nav_hunk('prev', {}), { buffer = bufnr, desc = 'Go to Previous Hunk' })
+        vim.keymap.set('n', '<leader>gj', require('gitsigns').nav_hunk('next', {}), { buffer = bufnr, desc = 'Go to Next Hunk' })
       end,
     },
   },
@@ -534,6 +536,7 @@ require('lazy').setup({
       --    That is to say, every time a new file is opened that is associated with
       --    an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
       --    function will be executed to configure the current buffer
+      -- Configure hover window border
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
         callback = function(event)
@@ -625,6 +628,14 @@ require('lazy').setup({
         end,
       })
 
+      -- To instead override globally
+      local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
+      function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
+        opts = opts or {}
+        opts.border = opts.border or 'rounded'
+        return orig_util_open_floating_preview(contents, syntax, opts, ...)
+      end
+
       -- LSP servers and clients are able to communicate to each other what features they support.
       --  By default, Neovim doesn't support everything that is in the LSP specification.
       --  When you add nvim-cmp, luasnip, etc. Neovim now has *more* capabilities.
@@ -642,26 +653,7 @@ require('lazy').setup({
       --  - filetypes (table): Override the default list of associated filetypes for the server
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
-      --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-
-      -- local _border = 'rounded'
-      --
-      -- local lsp_flags = {
-      --   allow_incremental_sync = true,
-      --   debounce_text_changes = 150,
-      -- }
-      --
-      -- vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
-      --   border = _border,
-      -- })
-      --
-      -- vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-      --   border = _border,
-      -- })
-      --
-      -- vim.diagnostic.config {
-      --   float = { border = _border },
-      -- }
+      -- For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
 
       local servers = {
         -- clangd = {},
@@ -938,8 +930,13 @@ require('lazy').setup({
           entries = 'native',
         },
         window = {
+          completion = {
+            border = 'rounded',
+            winhighlight = 'Normal:Normal,FloatBorder:Normal,CursorLine:Visual,Search:None',
+          },
           documentation = {
             border = 'rounded',
+            winhighlight = 'Normal:Normal,FloatBorder:Normal,CursorLine:Visual,Search:None',
           },
         },
       }
