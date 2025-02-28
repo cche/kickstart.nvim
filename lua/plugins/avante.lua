@@ -6,19 +6,20 @@ return {
     version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
     opts = {
       ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
-      provider = 'ollama',
+      provider = 'gemini',
       vendors = {
         ---@type AvanteProvider
         ---@diagnostic disable-next-line: missing-fields
         ollama = {
           api_key_name = '',
-          ask = '',
-          endpoint = 'http://127.0.0.1:11434/api',
-          model = 'qwen2.5-coder',
-          -- model = 'qwen2.5',
+          -- endpoint = 'http://127.0.0.1:11434/v1',
+          -- model = 'qwen2.5-coder',
+          model = 'qwen2.5',
           -- model = 'deepseek-r1',
           -- model = 'deepseek-coder-v2',
           -- model = 'deepseek-r1:14b',
+          endpoint = 'http://127.0.0.1:11434/api',
+          -- ask = '',
           parse_curl_args = function(opts, code_opts)
             return {
               url = opts.endpoint .. '/chat',
@@ -29,7 +30,7 @@ return {
               body = {
                 model = opts.model,
                 options = {
-                  num_ctx = 16384,
+                  num_ctx = 32000,
                 },
                 messages = require('avante.providers').copilot.parse_messages(code_opts), -- you can make your own message, but this is very advanced
                 stream = true,
@@ -169,10 +170,10 @@ return {
       'nvim-lua/plenary.nvim',
       'MunifTanjim/nui.nvim',
       --- The below dependencies are optional,
-      'echasnovski/mini.pick', -- for file_selector provider mini.pick
+      -- 'echasnovski/mini.pick', -- for file_selector provider mini.pick
       'nvim-telescope/telescope.nvim', -- for file_selector provider telescope
       'hrsh7th/nvim-cmp', -- autocompletion for avante commands and mentions
-      'ibhagwan/fzf-lua', -- for file_selector provider fzf
+      -- 'ibhagwan/fzf-lua', -- for file_selector provider fzf
       'nvim-tree/nvim-web-devicons', -- or echasnovski/mini.icons
       'zbirenbaum/copilot.lua', -- for providers='copilot'
       {
